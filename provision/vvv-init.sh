@@ -30,7 +30,7 @@ setup_nginx_folders() {
   noroot touch "${VVV_PATH_TO_SITE}/log/nginx-error.log"
   noroot touch "${VVV_PATH_TO_SITE}/log/nginx-access.log"
   echo " * Creating public_html folder if it doesn't exist already"
-  noroot mkdir -p "${VVV_PATH_TO_SITE}/public_html"
+  noroot mkdir -p "${VVV_PATH_TO_SITE}"
 }
 
 install_plugins() {
@@ -136,16 +136,16 @@ install_wp() {
   ADMIN_PASSWORD=$(get_config_value 'admin_password' "password")
   ADMIN_EMAIL=$(get_config_value 'admin_email' "admin@local.test")
 
-  echo " * Installing using wp core install --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}/public_html\""
+  echo " * Installing using wp core install --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}\""
   noroot wp core install --url="${DOMAIN}" --title="${SITE_TITLE}" --admin_name="${ADMIN_USER}" --admin_email="${ADMIN_EMAIL}" --admin_password="${ADMIN_PASSWORD}"
   echo " * WordPress was installed, with the username '${ADMIN_USER}', and the password '${ADMIN_PASSWORD}' at '${ADMIN_EMAIL}'"
 
   if [ "${WP_TYPE}" = "subdomain" ]; then
-    echo " * Running Multisite install using wp core multisite-install --subdomains --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}/public_html\""
+    echo " * Running Multisite install using wp core multisite-install --subdomains --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}\""
     noroot wp core multisite-install --subdomains --url="${DOMAIN}" --title="${SITE_TITLE}" --admin_name="${ADMIN_USER}" --admin_email="${ADMIN_EMAIL}" --admin_password="${ADMIN_PASSWORD}"
     echo " * Multisite install complete"
   elif [ "${WP_TYPE}" = "subdirectory" ]; then
-    echo " * Running Multisite install using wp core ${INSTALL_COMMAND} --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}/public_html\""
+    echo " * Running Multisite install using wp core ${INSTALL_COMMAND} --url=\"${DOMAIN}\" --title=\"${SITE_TITLE}\" --admin_name=\"${ADMIN_USER}\" --admin_email=\"${ADMIN_EMAIL}\" --admin_password=\"${ADMIN_PASSWORD}\" --path=\"${VVV_PATH_TO_SITE}\""
     noroot wp core multisite-install --url="${DOMAIN}" --title="${SITE_TITLE}" --admin_name="${ADMIN_USER}" --admin_email="${ADMIN_EMAIL}" --admin_password="${ADMIN_PASSWORD}"
     echo " * Multisite install complete"
   fi
@@ -186,7 +186,7 @@ update_wp() {
 setup_database
 setup_nginx_folders
 
-cd "${VVV_PATH_TO_SITE}/public_html"
+cd "${VVV_PATH_TO_SITE}"
 
 
 
@@ -195,18 +195,18 @@ if [ "${WP_TYPE}" == "none" ]; then
 else
   echo " * Install type is '${WP_TYPE}'"
   # Install and configure the latest stable version of WordPress
-  if [[ ! -f "${VVV_PATH_TO_SITE}/public_html/wp-load.php" ]]; then
-    download_wordpress "${VVV_PATH_TO_SITE}/public_html" "${WP_VERSION}" "${WP_LOCALE}"
+  if [[ ! -f "${VVV_PATH_TO_SITE}/wp-load.php" ]]; then
+    download_wordpress "${VVV_PATH_TO_SITE}" "${WP_VERSION}" "${WP_LOCALE}"
   fi
 
-  if [[ ! -f "${VVV_PATH_TO_SITE}/public_html/wp-config.php" ]]; then
+  if [[ ! -f "${VVV_PATH_TO_SITE}/wp-config.php" ]]; then
     initial_wpconfig
   fi
 
   if ! $(noroot wp core is-installed ); then
     echo " * WordPress is present but isn't installed to the database, checking for SQL dumps in wp-content/database.sql or the main backup folder."
-    if [ -f "${VVV_PATH_TO_SITE}/public_html/wp-content/database.sql" ]; then
-      restore_db_backup "${VVV_PATH_TO_SITE}/public_html/wp-content/database.sql"
+    if [ -f "${VVV_PATH_TO_SITE}/wp-content/database.sql" ]; then
+      restore_db_backup "${VVV_PATH_TO_SITE}/wp-content/database.sql"
     elif [ -f "/srv/database/backups/${VVV_SITE_NAME}.sql" ]; then
       restore_db_backup "/srv/database/backups/${VVV_SITE_NAME}.sql"
     else
